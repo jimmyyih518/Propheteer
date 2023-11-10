@@ -9,4 +9,4 @@ class NbaPredictor(BaseModel):
         pass
 
     def predict(self, data):
-        pass
+        return 0 # Not Implemented Yet
