@@ -7,7 +7,7 @@ class BaseModel(ABC):
 
     """
 
-    def __init__(self, model_path):
+    def __init__(self, model_path: str) -> None:
         self.model_path = model_path
         self.model = None
 
@@ -25,23 +25,20 @@ class BaseModel(ABC):
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
-    @abstractmethod
     def train(self):
         """
         Perform a training run. This method should be overridden by subclasses.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
 
-    @abstractmethod
-    def forward(self):
-        """
-        Standard forward pass for PyTorch Models. This method should be overridden by subclasses.
-        """
-        raise NotImplementedError("This method should be overridden by subclasses.")
-
-    @abstractmethod
     def save_model(self):
         """
         Save the model to file. This method should be overridden by subclasses.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+    def forward(self):
+        """
+        Standard forward pass for PyTorch Models. This method should be overridden by subclasses.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")

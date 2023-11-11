@@ -1,3 +1,4 @@
+import logging
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -10,8 +11,31 @@ from typing import Optional, Tuple
 
 from .base_model import BaseModel
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s"
+)
+logger = logging.getLogger(__name__)
+
 
 class PlayerBoxScoreLSTM(nn.Module, BaseModel):
+
+    """
+    LSTM Implementation to predict player box score stats for a given game
+    """
+
+    # Static Variables
+    SCALING_FACTORS: dict = {
+        "PTS": 80,
+        "REB": 30,
+        "AST": 25,
+        "STL": 10,
+        "BLK": 10,
+    }
+    MAX_TEAM_COUNT: int = 30
+    MAX_DAYS_IN_YEAR: int = 367  # Rounding up on Leap Year
+    MAX_COUNTRY_COUNT: int = 82
+
     def __init__(
         self,
         input_size: int,
@@ -60,15 +84,26 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         self.fc4 = nn.Linear(int(max_hidden_size / 2), output_size)
         self.dropout = nn.Dropout(dropout)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.team_embedding = nn.Embedding(30, team_embedding_dim)
-        self.date_embedding = nn.Embedding(367, date_embedding_dim)
-        self.country_embedding = nn.Embedding(82, country_embedding_dim)
-        self.scale_factors = torch.tensor([80, 30, 25, 10, 10], dtype=torch.float32).to(
-            self.device
+        self.team_embedding = nn.Embedding(self.NBA_TEAM_COUNT, team_embedding_dim)
+        self.date_embedding = nn.Embedding(self.MAX_DAYS_IN_YEAR, date_embedding_dim)
+        self.country_embedding = nn.Embedding(
+            self.MAX_COUNTRY_COUNT, country_embedding_dim
         )
+        self.scale_factors = torch.tensor(
+            [
+                self.SCALING_FACTORS["PTS"],
+                self.SCALING_FACTORS["REB"],
+                self.SCALING_FACTORS["AST"],
+                self.SCALING_FACTORS["STL"],
+                self.SCALING_FACTORS["BLK"],
+            ],
+            dtype=torch.float32,
+        ).to(self.device)
         self.verbose = verbose
         self.train_losses = []
         self.val_losses = []
+        if self.verbose:
+            logger.info(f"Instantiated PlayerBoxScoreLSTM model")
 
     def forward(
         self,
@@ -158,12 +193,7 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
                     date_ids_batch,
                     country_ids_batch,
                 )
-                # print("Outputs Shape:", outputs.shape)
-                # print("Target Shape:", Y_batch.shape)
                 outputs_last_timestep = outputs[:, -1, :]
-                # Y_batch_last_timestep = Y_batch[:, -1]
-                # print("Outputs Shape:", outputs_last_timestep.shape)
-                # print("Target Shape:", Y_batch_last_timestep.shape)
                 loss = torch.sqrt(
                     criterion(outputs_last_timestep, Y_batch)
                 )  # RMSE Loss for last step only
@@ -214,13 +244,13 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
                 self.val_losses.append(None)
 
             if (epoch + 1) % 20 == 0 and self.verbose:
-                print(
-                    f"Epoch [{epoch+1}/{epochs}], Train Loss: {loss.item():.4f}", end=""
+                logger.info(
+                    f"Epoch [{epoch+1}/{epochs}], Train Loss: {loss.item():.4f}"
                 )
                 if val_loader:
-                    print(f", Val Loss: {avg_val_loss:.4f}")
-                else:
-                    print()
+                    logger.info(f", Val Loss: {avg_val_loss:.4f}")
+
+        logger.info("Training Complete")
 
     def predict(self, dataloader: DataLoader) -> Tuple[np.ndarray, np.ndarray]:
         """
@@ -288,7 +318,7 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         """
         torch.save(self.state_dict(), file_path)
         if self.verbose:
-            print(f"Model saved to {file_path}")
+            logger.info(f"Model saved to {file_path}")
 
     def load_model(self, file_path):
         """
@@ -301,4 +331,4 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         # Ensure the model parameters are on the correct device
         self.to(self.device)
         if self.verbose:
-            print(f"Model loaded from {file_path} to {self.device}")
+            logger.info(f"Model loaded from {file_path} to {self.device}")
