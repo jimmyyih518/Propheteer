@@ -5,17 +5,17 @@ from .models.nba_predictor import NbaPredictor
 def parse_args(args=None):
     parser = argparse.ArgumentParser(description="NBA Predictor CLI Tool")
     parser.add_argument(
-        "--param1", type=str, required=True, help="Description for param1"
+        "--model-key", type=str, required=True, help="S3 key for model artifact"
     )
     parser.add_argument(
-        "--param2", type=int, required=True, help="Description for param2"
+        "--input-file", type=str, required=True, help="S3 key for input file"
     )
     return parser.parse_args(args)
 
 
 def run(args):
-    predictor = NbaPredictor(model_path=args.param1)
-    predictions = predictor.predict(args.param2)
+    predictor = NbaPredictor(model_path=args.model_key)
+    predictions = predictor.predict(args.input_file)
     print("Predictions made")
     return predictions
 
