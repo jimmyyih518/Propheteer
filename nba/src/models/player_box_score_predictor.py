@@ -84,7 +84,7 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         self.fc4 = nn.Linear(int(max_hidden_size / 2), output_size)
         self.dropout = nn.Dropout(dropout)
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        self.team_embedding = nn.Embedding(self.NBA_TEAM_COUNT, team_embedding_dim)
+        self.team_embedding = nn.Embedding(self.MAX_TEAM_COUNT, team_embedding_dim)
         self.date_embedding = nn.Embedding(self.MAX_DAYS_IN_YEAR, date_embedding_dim)
         self.country_embedding = nn.Embedding(
             self.MAX_COUNTRY_COUNT, country_embedding_dim

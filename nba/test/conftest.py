@@ -2,6 +2,7 @@ import os
 import sys
 import pytest
 
+
 @pytest.fixture(autouse=True)
 def set_up_paths():
     project_root = os.path.dirname(os.path.dirname(__file__))
@@ -9,5 +10,3 @@ def set_up_paths():
 
     if parent_dir not in sys.path:
         sys.path.insert(0, parent_dir)
-
-

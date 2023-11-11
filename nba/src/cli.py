@@ -1,12 +1,19 @@
+import os
 import argparse
 from .models.nba_predictor import NbaPredictor
 from .data_processors.sequence_processor import NbaSequenceDataProcessor
 
 
+dir_path = os.path.dirname(os.path.realpath(__file__))
+default_local_model_path = os.path.join(
+    dir_path, "artifacts/player_box_score_predictor_state_dict.pth"
+)
+
+
 def parse_args(args=None):
     parser = argparse.ArgumentParser(description="NBA Predictor CLI Tool")
     parser.add_argument(
-        "--model-key", type=str, required=True, help="S3 key for model artifact"
+        "--model-key", type=str, required=False, help="S3 key for model artifact"
     )
     parser.add_argument(
         "--input-file", type=str, required=True, help="S3 key for input file"
@@ -16,8 +23,9 @@ def parse_args(args=None):
 
 def run(args):
     box_score_sequence_processor = NbaSequenceDataProcessor()
+    model_path = args.model_key if args.model_key else default_local_model_path
     predictor = NbaPredictor(
-        model_path=args.model_key, data_processor=box_score_sequence_processor
+        model_path=model_path, data_processor=box_score_sequence_processor
     )
     predictions = predictor.predict(args.input_file)
     print("Predictions made")
