@@ -1,5 +1,6 @@
 import argparse
 from .models.nba_predictor import NbaPredictor
+from .data_processors.sequence_processor import NbaSequenceDataProcessor
 
 
 def parse_args(args=None):
@@ -14,7 +15,10 @@ def parse_args(args=None):
 
 
 def run(args):
-    predictor = NbaPredictor(model_path=args.model_key)
+    box_score_sequence_processor = NbaSequenceDataProcessor()
+    predictor = NbaPredictor(
+        model_path=args.model_key, data_processor=box_score_sequence_processor
+    )
     predictions = predictor.predict(args.input_file)
     print("Predictions made")
     return predictions

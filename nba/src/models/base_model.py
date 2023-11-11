@@ -2,6 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class BaseModel(ABC):
+    """
+    Encapsulates the basic methods of a PyTorch based model
+
+    """
+
     def __init__(self, model_path):
         self.model_path = model_path
         self.model = None
@@ -14,8 +19,29 @@ class BaseModel(ABC):
         raise NotImplementedError("This method should be overridden by subclasses.")
 
     @abstractmethod
-    def predict(self, data):
+    def predict(self):
         """
-        Perform a prediction. This method should be overridden by subclasses.
+        Perform a prediction, usually calling the forward method. This method should be overridden by subclasses.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+    @abstractmethod
+    def train(self):
+        """
+        Perform a training run. This method should be overridden by subclasses.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+    @abstractmethod
+    def forward(self):
+        """
+        Standard forward pass for PyTorch Models. This method should be overridden by subclasses.
+        """
+        raise NotImplementedError("This method should be overridden by subclasses.")
+
+    @abstractmethod
+    def save_model(self):
+        """
+        Save the model to file. This method should be overridden by subclasses.
         """
         raise NotImplementedError("This method should be overridden by subclasses.")
