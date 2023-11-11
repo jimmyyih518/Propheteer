@@ -13,12 +13,15 @@ const stackDefinitions = [
   { constructor: PropheteerPrecomputeStack, name: "PropheteerPrecomputeStack" },
 ];
 
-
 // Sequential deployments to handle dependencies (cfn outputs)
 let previousStack: cdk.Stack | null = null;
 
 stackDefinitions.forEach((stackDef) => {
-  const stack = new stackDef.constructor(app, stackDef.name, propheteerStackProps);
+  const stack = new stackDef.constructor(
+    app,
+    stackDef.name,
+    propheteerStackProps,
+  );
 
   if (previousStack) {
     stack.addDependency(previousStack);

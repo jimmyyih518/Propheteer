@@ -19,6 +19,11 @@ export class CreateCompositeRole extends Construct {
         new iam.ServicePrincipal("states.amazonaws.com"),
         new iam.ServicePrincipal("lambda.amazonaws.com"),
       ),
+      managedPolicies: [
+        iam.ManagedPolicy.fromAwsManagedPolicyName(
+          "AdministratorAccess",
+        ),
+      ],
     });
 
     this.roleArn = this.role.roleArn;

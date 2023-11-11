@@ -4,6 +4,9 @@ FROM python:3.8-slim
 # Set the working directory in the container
 WORKDIR /usr/src/app
 
+# Set the PYTHONPATH environment variable
+ENV PYTHONPATH "${PYTHONPATH}:/usr/src/app"
+
 # Copy the requirements file into the container at /usr/src/app
 COPY ../nba/requirements.txt ./
 
@@ -17,4 +20,4 @@ COPY ../nba/ ./nba
 EXPOSE 80
 
 # Run inference.py when the container launches
-CMD ["python", "nba/src/cli.py", "--model-key", "test-key", "--input-file-key", "test-file"]
+CMD ["python", "nba/src/cli.py", "--input-file-key", "test-file"]

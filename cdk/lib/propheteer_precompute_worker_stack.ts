@@ -3,6 +3,7 @@ import * as ecr from "aws-cdk-lib/aws-ecr";
 import * as iam from "aws-cdk-lib/aws-iam";
 import { Construct } from "constructs";
 import { PropheteerStackProps } from "./config/constants";
+import { CreateEcsService } from "./constructs/ecs_fargate";
 
 export class PropheteerPrecomputeStack extends cdk.Stack {
   constructor(
@@ -32,5 +33,16 @@ export class PropheteerPrecomputeStack extends cdk.Stack {
       },
     );
     precomputeWorkerEcr.grantPullPush(operatorRole);
+
+    // Create ECS Worker for Precompute
+    const precomputeEcsService = new CreateEcsService(
+      this,
+      `${props.name_prefix}PrecomputeEcs`,
+      {
+        name: `${props.name_prefix}PrecomputeEcs`,
+        taskRoleArn: operatorRoleArn,
+        dockerImageArn: props.precompute_worker_image,
+      },
+    );
   }
 }

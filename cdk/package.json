@@ -9,7 +9,8 @@
     "watch": "tsc -w",
     "test": "jest",
     "cdk": "cdk",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "deploy": "tsc && cdk synth && cdk deploy --all --require-approval never"
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",

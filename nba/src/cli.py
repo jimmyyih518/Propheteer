@@ -1,13 +1,16 @@
 import os
 import argparse
-from .models.nba_predictor import NbaPredictor
-from .data_processors.sequence_processor import NbaSequenceDataProcessor
+import logging
+from nba.src.models.nba_predictor import NbaPredictor
+from nba.src.data_processors.sequence_processor import NbaSequenceDataProcessor
 
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 default_local_model_path = os.path.join(
     dir_path, "artifacts/player_box_score_predictor_state_dict.pth"
 )
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args(args=None):
@@ -24,11 +27,13 @@ def parse_args(args=None):
 def run(args):
     box_score_sequence_processor = NbaSequenceDataProcessor()
     model_path = args.model_key if args.model_key else default_local_model_path
+    logger.info(f"Model path: {model_path}")
     predictor = NbaPredictor(
         model_path=model_path, data_processor=box_score_sequence_processor
     )
+    logger.info("Generating predictions")
     predictions = predictor.predict(args.input_file)
-    print("Predictions made")
+    logger.info("Predictions made")
     return predictions
 
 
