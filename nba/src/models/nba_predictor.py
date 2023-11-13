@@ -2,14 +2,18 @@ import boto3
 import torch
 import io
 import logging
+import pandas as pd
+from typing import List, Any
 from .base_model import BaseModel
 from .player_box_score_predictor import PlayerBoxScoreLSTM
-
+from ..constants.box_score_target_features import BoxScoreTargetFeatures
 
 logger = logging.getLogger(__name__)
 
 
 class NbaPredictor(BaseModel):
+    TARGET_FEATURES: List[str] = BoxScoreTargetFeatures.list()
+
     def __init__(self, model_path, data_processor):
         super().__init__(model_path)
         self.data_processor = data_processor
@@ -56,5 +60,10 @@ class NbaPredictor(BaseModel):
 
     def predict(self, data):
         processed_sequence_data = self.data_processor.process_data(data)
-        # predictions = self.model.predict(processed_sequence_data)
-        return 0  # Not Implemented Yet
+        predictions, original_targets = self.model.predict(processed_sequence_data)
+        return {
+            "predictions": pd.DataFrame(predictions, columns=self.TARGET_FEATURES),
+            "original_targets": pd.DataFrame(
+                original_targets, columns=self.TARGET_FEATURES
+            ),
+        }

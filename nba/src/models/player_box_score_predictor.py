@@ -249,7 +249,9 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
 
         logger.info("Training Complete")
 
-    def predict(self, dataloader: DataLoader) -> Tuple[np.ndarray, np.ndarray]:
+    def predict(
+        self, dataloader: DataLoader, scale_target: bool = False
+    ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Make predictions using the trained model on the provided dataloader.
 
@@ -302,7 +304,8 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         all_targets = torch.cat(all_targets, dim=0)
 
         predictions = predictions * self.scale_factors
-        all_targets = all_targets * self.scale_factors.view(1, -1)
+        if scale_target:
+            all_targets = all_targets * self.scale_factors.view(1, -1)
 
         return predictions.cpu().numpy(), all_targets.cpu().numpy()
 

@@ -1,3 +1,6 @@
 aws
 __pycache__/
 *model_conversion.ipynb
+*test_nb.ipynb
+*combined_data.csv
+*sequence_data*
