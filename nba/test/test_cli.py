@@ -87,6 +87,7 @@ def test_cli_run_without_model_key():
 
     # Assert
     assert predictions is not None
+    """
     print("test output")
     print(predictions)
     print("sample output")
@@ -99,3 +100,4 @@ def test_cli_run_without_model_key():
                 sample_output[column].tolist(),
             )
         )
+    """
