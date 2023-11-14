@@ -20,10 +20,10 @@ class NbaLstmPredictorFeatureProcessor(PipelineComponent):
         self.country_encoder = self._load_transform_function(country_encoder_path)
         self.logger = logging.getLogger(__name__)
 
-    def process(self, state, input_key=None):
-        data = state.get(input_key)
+    def process(self, state):
+        data = state.get(self.input_key)
         self._validate_dataframe(data, state)
-        processed_data = self._process_dataframe_features(data)
+        processed_data = self._process_dataframe_features(data, state)
         processed_data = processed_data[state.ADDITIONAL_INPUT_COLUMNS+state.REQUIRED_COLUMNS]
         state.set(self.component_name, processed_data)
 

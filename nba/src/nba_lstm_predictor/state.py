@@ -13,3 +13,9 @@ class NbaLstmPipelineState(PipelineState):
 
     def remove(self, key):
         self.data.pop(key, None)
+
+    def __str__(self):
+        return str(self.data.keys()) + '/n' + str(self.data)
+    
+    def __repr__(self):
+        return str(self.data.keys()) + '/n' + str(self.data)

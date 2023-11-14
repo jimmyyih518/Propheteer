@@ -1,3 +1,4 @@
+import logging
 import pandas as pd
 from typing import List, Any
 from ..pipeline.pipeline_component import PipelineComponent
@@ -40,6 +41,7 @@ class NbaLstmPredictorDataLoader(PipelineComponent):
 
     def __init__(self, component_name, input_key=None):
         super().__init__(component_name, input_key)
+        self.logger = logging.getLogger(__name__)
 
     def process(self, state):
         # Setup pipeline constants
@@ -47,10 +49,18 @@ class NbaLstmPredictorDataLoader(PipelineComponent):
         # Load input data from CSV
         data = self.load_csv(self.input_key)
         state.set(self.component_name, data)
+        print(state)
 
-    @classmethod
-    def load_csv(filepath):
-        return pd.read_csv(filepath)
+    def load_csv(self, filepath):
+        try:
+            print(f'reading csv from {filepath}')
+            df = pd.read_csv(filepath)
+            self.logger.info(f"Loaded CSV, first few rows {df.head()}")
+            print(df.head())
+            return df
+        except Exception as e:
+            self.logger.exception(f"Error loading csv from {filepath}, {e}")
+            raise
 
     def _set_constants(self, state):
         state.set("REQUIRED_COLUMNS", self.REQUIRED_COLUMNS)

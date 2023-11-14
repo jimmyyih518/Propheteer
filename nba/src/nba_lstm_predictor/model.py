@@ -23,9 +23,9 @@ class NbaLstmPredictorModel(PipelineComponent):
         self.logger.info("Loading model on initialization")
         self._load_model(model_path)
 
-    def process(self, state, input_key=None):
-        data = state.get(input_key)
-        processed_data = self.model.predict(data, state)
+    def process(self, state):
+        data = state.get(self.input_key)
+        processed_data = self._predict(data, state)
         state.set(self.component_name, processed_data)
 
     def _load_model(self, model_path):

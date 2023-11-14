@@ -6,12 +6,13 @@ class NbaLstmPredictorOutputProcessor(PipelineComponent):
     def __init__(self, component_name, input_key=None):
         super().__init__(component_name, input_key)
 
-    def process(self, state, input_key=None):
-        data = state.get(input_key)
+    def process(self, state):
+        data = state.get(self.input_key)
         processed_data = self._process_output(data, state)
-        state.set(self.component_name, data)
+        state.set(self.component_name, processed_data)
 
     def _process_output(self, data, state):
+        print('process output', data)
         predictions = data["predictions"]
         original_targets = data["original_targets"]
         return {

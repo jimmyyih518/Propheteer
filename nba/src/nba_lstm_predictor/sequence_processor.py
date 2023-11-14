@@ -10,8 +10,8 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
     def __init__(self, component_name, input_key=None):
         super().__init__(component_name, input_key)
 
-    def process(self, state, input_key=None, batch_size=128):
-        data = state.get(input_key)
+    def process(self, state, batch_size=128):
+        data = state.get(self.input_key)
         # Process sequence data
         (
             sequence_data,
@@ -37,9 +37,16 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
 
     def _process_sequences(self, data, state):
         grouped_data = self._sort_and_group_df(data)
+        sequence_data=[]
+        sequence_labels=[]
+        sequence_player_team_ids=[]
+        sequence_opponent_team_ids=[]
+        sequence_date_ids=[]
+        sequence_country_ids=[]
         for name, group in tqdm(grouped_data):
             seq, lab, pt_ids, ot_ids, date_ids, country_ids = self._extract_sequences(
                 group, state.SEQUENCE_LENGTH, state.TARGET_FEATURES
+                , state
             )
             sequence_data.extend(seq)
             sequence_labels.extend(lab)

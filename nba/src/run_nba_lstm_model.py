@@ -79,21 +79,27 @@ def run(args):
     logger.info(f"Country Encoder path: {country_encoder_path}")
 
     pipeline_state = state_machine()
-    pipeline = PipelineOrchestrator(
-        name="nba_lstm_model",
-        input_key=args.input_file,
-        components=[
-            data_loader("data_loader"),
-            feature_processor(
+    pipeline_data_loader = data_loader("data_loader")
+    pipeline_feature_processor = feature_processor(
                 component_name="feature_processor",
                 input_scaler_path=input_scaler_path,
                 team_encoder_path=team_encoder_path,
                 country_encoder_path=country_encoder_path,
-            ),
-            sequence_processor("sequence_processor"),
-            model("model", model_path=model_path),
-            output_processor("output_processor"),
-            output_writer("output_writer"),
+            )
+    pipeline_sequence_processor = sequence_processor("sequence_processor")
+    pipeline_model = model("model", model_path=model_path)
+    pipeline_output_processor = output_processor("output_processor")
+    pipeline_output_writer = output_writer("output_writer")
+    pipeline = PipelineOrchestrator(
+        name="nba_lstm_model",
+        input_key=args.input_file,
+        components=[
+            pipeline_data_loader,
+            pipeline_feature_processor,
+            pipeline_sequence_processor,
+            pipeline_model,
+            pipeline_output_processor,
+            pipeline_output_writer,
         ],
         return_last_output=True,
     )

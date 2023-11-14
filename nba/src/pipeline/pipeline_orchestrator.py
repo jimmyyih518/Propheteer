@@ -17,8 +17,10 @@ class PipelineOrchestrator(PipelineComponent):
                 self.logger.info(
                     f"Processing step {component.component_name} using input {self.last_output_key}"
                 )
+                print(f"Processing step {component.component_name} using input {self.last_output_key}")
                 # Process the component or nested pipeline
-                self._process_component(component, state, self.last_output_key)
+                component.input_key = self.last_output_key
+                self._process_component(component, state)
 
             # Fetch the final output
             final_output = state.get(self.last_output_key)
@@ -45,10 +47,10 @@ class PipelineOrchestrator(PipelineComponent):
         if component.is_pipeline():
             # For a nested pipeline, process each component in it sequentially
             for sub_component in component.components:
-                self._process_component(sub_component, state, self.last_output_key)
+                self._process_component(sub_component, state)
         else:
             # Process an individual component
-            component.process(state, self.last_output_key)
+            component.process(state)
 
         # Update the last output key to the current component's name
         self.last_output_key = component.component_name
