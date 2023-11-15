@@ -1,5 +1,6 @@
 import boto3
 import os
+import io
 import pandas as pd
 from moto import mock_s3
 
@@ -92,6 +93,55 @@ def test_cli_run_without_model_key():
     sample_output = pd.read_csv(sample_output_file)
 
     test_args = ["--input-file", sample_input_file]
+
+    # Act
+    args = parse_args(test_args)
+    predictions = run(args)
+
+    # Assert
+    assert predictions is not None
+
+
+@mock_s3
+def test_cli_run_with_s3_input_key():
+    # Arrange
+    from nba.src.cli import parse_args, run
+
+    bucket_name = "mybucket"
+    file_key = "input.csv"
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket=bucket_name)
+    # Read the real state dict file
+    sample_data_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "artifacts",
+        "nba_lstm_predictor",
+        "sample_input_data.csv",
+    )
+    sample_data = pd.read_csv(sample_data_file)
+    csv_buffer = io.StringIO()
+    sample_data.to_csv(csv_buffer, index=False)
+
+    # Upload the state dict to the mocked S3
+    s3.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
+
+
+    sample_output_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "artifacts",
+        "nba_lstm_predictor",
+        "sample_output_data.csv",
+    )
+    sample_output = pd.read_csv(sample_output_file)
+
+    test_args = [
+        "--input-file",
+        f"s3://{bucket_name}/{file_key}",
+    ]
 
     # Act
     args = parse_args(test_args)

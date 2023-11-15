@@ -1,5 +1,7 @@
 import logging
+import boto3
 import pandas as pd
+import io
 from typing import List, Any
 from ..pipeline.pipeline_component import PipelineComponent
 from ..constants.box_score_target_features import BoxScoreTargetFeatures
@@ -42,15 +44,23 @@ class NbaLstmPredictorDataLoader(PipelineComponent):
     def __init__(self, component_name, input_key=None):
         super().__init__(component_name, input_key)
         self.logger = logging.getLogger(__name__)
+        self.s3 = boto3.client("s3")
 
     def process(self, state):
         # Setup pipeline constants
         self._set_constants(state)
         # Load input data from CSV
         data = self.load_csv(self.input_key)
+        print("loaded data", data)
         state.set(self.component_name, data)
 
     def load_csv(self, filepath):
+        if filepath.startswith("s3://"):
+            return self._load_csv_from_s3(filepath)
+        else:
+            return self._load_csv_from_local(filepath)
+
+    def _load_csv_from_local(self, filepath):
         try:
             self.logger.info(f"reading csv from {filepath}")
             df = pd.read_csv(filepath)
@@ -59,6 +69,18 @@ class NbaLstmPredictorDataLoader(PipelineComponent):
         except Exception as e:
             self.logger.exception(f"Error loading csv from {filepath}, {e}")
             raise
+
+    def _load_csv_from_s3(self, filepath):
+        self.logger.info(f"Retrieving input csv file from s3 {filepath}")
+        s3_path_parts = filepath.replace("s3://", "").split("/")
+        bucket_name = s3_path_parts[0]
+        object_key = "/".join(s3_path_parts[1:])
+        # Get the object from S3
+        response = self.s3.get_object(Bucket=bucket_name, Key=object_key)
+        csv_content = response["Body"].read().decode("utf-8")
+
+        # Use StringIO to convert the CSV string to a file-like object so it can be read into a DataFrame
+        return pd.read_csv(io.StringIO(csv_content))
 
     def _set_constants(self, state):
         self.logger.info("Setting Constants into State")

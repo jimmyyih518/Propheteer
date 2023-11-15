@@ -19,8 +19,11 @@ class NbaLstmPredictorModel(PipelineComponent):
     ):
         super().__init__(component_name, input_key)
         self.logger = logging.getLogger(__name__)
+        self.s3 = boto3.client("s3")
+
         with open(model_config_path) as f:
             model_config = json.load(f)
+
         self.model = PlayerBoxScoreLSTM(**model_config)
         self.logger.info(f"Loading model on initialization for {model_mode}")
         self.model_mode = model_mode
@@ -53,11 +56,8 @@ class NbaLstmPredictorModel(PipelineComponent):
         bucket_name = s3_path_parts[0]
         object_key = "/".join(s3_path_parts[1:])
 
-        # Initialize S3 client
-        s3 = boto3.client("s3")
-
         # Download the object
-        obj = s3.get_object(Bucket=bucket_name, Key=object_key)
+        obj = self.s3.get_object(Bucket=bucket_name, Key=object_key)
         state_dict = torch.load(io.BytesIO(obj["Body"].read()))
 
         # Load state dict into the model
