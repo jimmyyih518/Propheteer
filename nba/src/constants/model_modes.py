@@ -1,7 +1,7 @@
 from enum import Enum
 
 
-class CliRunModes(Enum):
+class ModelRunModes(Enum):
     train = "train"
     predict = "predict"
 
