@@ -18,12 +18,16 @@ from nba.src.constants.cli_modes import CliRunModes
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 default_local_model_path = os.path.join(
-    dir_path, "artifacts/player_box_score_predictor_state_dict.pth"
+    dir_path, "artifacts/nba_lstm_predictor/player_box_score_predictor_state_dict.pth"
 )
-default_input_scaler_path = os.path.join(dir_path, "artifacts/lstm_input_scaler.pkl")
-default_team_encoder_path = os.path.join(dir_path, "artifacts/lstm_team_encoder.pkl")
+default_input_scaler_path = os.path.join(
+    dir_path, "artifacts/nba_lstm_predictor/lstm_input_scaler.pkl"
+)
+default_team_encoder_path = os.path.join(
+    dir_path, "artifacts/nba_lstm_predictor/lstm_team_encoder.pkl"
+)
 default_country_encoder_path = os.path.join(
-    dir_path, "artifacts/lstm_country_encoder.pkl"
+    dir_path, "artifacts/nba_lstm_predictor/lstm_country_encoder.pkl"
 )
 
 logger = logging.getLogger(__name__)
@@ -81,11 +85,11 @@ def run(args):
     pipeline_state = state_machine()
     pipeline_data_loader = data_loader("data_loader")
     pipeline_feature_processor = feature_processor(
-                component_name="feature_processor",
-                input_scaler_path=input_scaler_path,
-                team_encoder_path=team_encoder_path,
-                country_encoder_path=country_encoder_path,
-            )
+        component_name="feature_processor",
+        input_scaler_path=input_scaler_path,
+        team_encoder_path=team_encoder_path,
+        country_encoder_path=country_encoder_path,
+    )
     pipeline_sequence_processor = sequence_processor("sequence_processor")
     pipeline_model = model("model", model_path=model_path)
     pipeline_output_processor = output_processor("output_processor")

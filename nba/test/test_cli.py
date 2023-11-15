@@ -26,6 +26,7 @@ def test_cli_run_with_s3_model_key():
         "..",
         "src",
         "artifacts",
+        "nba_lstm_predictor",
         "player_box_score_predictor_state_dict.pth",
     )
     with open(model_path, "rb") as f:
@@ -39,6 +40,7 @@ def test_cli_run_with_s3_model_key():
         "..",
         "src",
         "artifacts",
+        "nba_lstm_predictor",
         "sample_input_data.csv",
     )
     sample_output_file = os.path.join(
@@ -46,6 +48,7 @@ def test_cli_run_with_s3_model_key():
         "..",
         "src",
         "artifacts",
+        "nba_lstm_predictor",
         "sample_output_data.csv",
     )
     sample_output = pd.read_csv(sample_output_file)
@@ -75,6 +78,7 @@ def test_cli_run_without_model_key():
         "..",
         "src",
         "artifacts",
+        "nba_lstm_predictor",
         "sample_input_data.csv",
     )
     sample_output_file = os.path.join(
@@ -82,6 +86,7 @@ def test_cli_run_without_model_key():
         "..",
         "src",
         "artifacts",
+        "nba_lstm_predictor",
         "sample_output_data.csv",
     )
     sample_output = pd.read_csv(sample_output_file)

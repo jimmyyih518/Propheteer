@@ -1,7 +1,3 @@
 aws
 __pycache__/
-*model_conversion.ipynb
-*test_nb.ipynb
-*combined_data.csv
-*sequence_data*
-*test_sequence_process.ipynb
+nba/src/artifacts/archive/
