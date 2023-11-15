@@ -2,15 +2,37 @@ import pandas as pd
 import numpy as np
 from tqdm import tqdm
 from torch.utils.data import DataLoader
+from typing import Any, Optional, Tuple
 from ..pipeline.pipeline_component import PipelineComponent
 from .nba_torch_dataset import NbaDataset
 
 
 class NbaLstmPredictorSequenceProcessor(PipelineComponent):
-    def __init__(self, component_name, input_key=None):
+    """
+    Sequence processor for NBA LSTM Predictor, responsible for processing and preparing sequence data for the LSTM model.
+
+    This component processes the input data into sequences suitable for LSTM training or prediction.
+    """
+
+    def __init__(self, component_name: str, input_key: Optional[str] = None):
+        """
+        Initialize the sequence processor.
+
+        Args:
+            component_name (str): The name of the component.
+            input_key (Optional[str]): The input key for the data source. Defaults to None.
+        """
         super().__init__(component_name, input_key)
 
-    def process(self, state, batch_size=128):
+    def process(self, state: Any, batch_size: int = 128) -> None:
+        """
+        Process the input data into sequences and create a DataLoader for the LSTM model.
+
+        Args:
+            state (Any): The state object containing pipeline state.
+            batch_size (int): The batch size for the DataLoader. Defaults to 128.
+        """
+
         data = state.get(self.input_key)
         # Process sequence data
         (
@@ -35,7 +57,20 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
         )
         state.set(self.component_name, torch_dataloader)
 
-    def _process_sequences(self, data, state):
+    def _process_sequences(
+        self, data: pd.DataFrame, state: Any
+    ) -> Tuple[np.ndarray, ...]:
+        """
+        Process the DataFrame into sequences for LSTM input.
+
+        Args:
+            data (pd.DataFrame): The input data DataFrame.
+            state (Any): The state object containing pipeline state.
+
+        Returns:
+            Tuple[np.ndarray, ...]: A tuple containing arrays of sequence data, labels, and various IDs.
+        """
+
         grouped_data = self._sort_and_group_df(data)
         sequence_data = []
         sequence_labels = []
@@ -70,13 +105,38 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
             sequence_country_ids,
         )
 
-    def _sort_and_group_df(self, df):
+    def _sort_and_group_df(self, df: pd.DataFrame) -> pd.core.groupby.DataFrameGroupBy:
+        """
+        Sort and group the DataFrame by player name and game date.
+
+        Args:
+            df (pd.DataFrame): The DataFrame to sort and group.
+
+        Returns:
+            pd.core.groupby.DataFrameGroupBy: The grouped DataFrame.
+        """
+
         df.sort_values(by=["PLAYER_NAME", "GAME_DATE_EST"], inplace=True)
         df_grouped_by_player = df.groupby("PLAYER_NAME")
 
         return df_grouped_by_player
 
-    def _extract_sequences(self, group, N, target_features, state):
+    def _extract_sequences(
+        self, group: pd.DataFrame, N: int, target_features: list, state: Any
+    ) -> Tuple[list, ...]:
+        """
+        Extract sequences from the grouped DataFrame.
+
+        Args:
+            group (pd.DataFrame): The grouped DataFrame.
+            N (int): The length of the sequence.
+            target_features (list): The list of target features.
+            state (Any): The state object containing pipeline state.
+
+        Returns:
+            Tuple[list, ...]: A tuple containing lists of sequences, labels, and various IDs.
+        """
+
         sequences = []
         labels = []
         player_team_ids = []
