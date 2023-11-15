@@ -2,23 +2,19 @@ import logging
 import boto3
 import torch
 import io
+import json
 from ..pipeline.pipeline_component import PipelineComponent
 from ..models.player_box_score_predictor import PlayerBoxScoreLSTM
 
 
 class NbaLstmPredictorModel(PipelineComponent):
-    def __init__(self, component_name, input_key=None, model_path=None):
+    def __init__(self, component_name, input_key=None, model_path=None, model_config_path=None):
         super().__init__(component_name, input_key)
         self.logger = logging.getLogger(__name__)
+        with open(model_config_path) as f:
+            model_config = json.load(f)
         self.model = PlayerBoxScoreLSTM(
-            input_size=28,
-            output_size=5,
-            dropout=0.2,
-            max_hidden_size=128,
-            team_embedding_dim=64,
-            date_embedding_dim=64,
-            country_embedding_dim=64,
-            lstm_hidden_dim=128,
+            **model_config
         )
         self.logger.info("Loading model on initialization")
         self._load_model(model_path)

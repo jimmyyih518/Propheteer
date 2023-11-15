@@ -20,6 +20,9 @@ dir_path = os.path.dirname(os.path.realpath(__file__))
 default_local_model_path = os.path.join(
     dir_path, "artifacts/nba_lstm_predictor/player_box_score_predictor_state_dict.pth"
 )
+default_local_model_json = os.path.join(
+    dir_path, "artifacts/nba_lstm_predictor/player_box_score_predictor_config.json"
+)
 default_input_scaler_path = os.path.join(
     dir_path, "artifacts/nba_lstm_predictor/lstm_input_scaler.pkl"
 )
@@ -45,6 +48,9 @@ def parse_args(args=None):
     )
     parser.add_argument(
         "--model-key", type=str, required=False, help="S3 key for model artifact"
+    )
+    parser.add_argument(
+        "--model-config", type=str, required=False, help="S3 key for model config json file"
     )
     parser.add_argument(
         "--input-scaler-key", type=str, required=False, help="S3 key for model artifact"
@@ -77,6 +83,7 @@ def run(args):
         else default_country_encoder_path
     )
     model_path = args.model_key if args.model_key else default_local_model_path
+    model_config_path = args.model_config if args.model_config else default_local_model_json
     logger.info(f"Model path: {model_path}")
     logger.info(f"Input Scaler path: {input_scaler_path}")
     logger.info(f"Team Encoder path: {team_encoder_path}")
@@ -91,7 +98,7 @@ def run(args):
         country_encoder_path=country_encoder_path,
     )
     pipeline_sequence_processor = sequence_processor("sequence_processor")
-    pipeline_model = model("model", model_path=model_path)
+    pipeline_model = model("model", model_path=model_path, model_config_path=model_config_path)
     pipeline_output_processor = output_processor("output_processor")
     pipeline_output_writer = output_writer("output_writer")
     pipeline = PipelineOrchestrator(

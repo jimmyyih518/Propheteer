@@ -1,3 +1,10 @@
 {
-    
+    "input_size": 28,
+    "output_size": 5,
+    "dropout": 0.2,
+    "max_hidden_size": 128,
+    "team_embedding_dim": 64,
+    "date_embedding_dim": 64,
+    "country_embedding_dim": 64,
+    "lstm_hidden_dim": 128
 }
