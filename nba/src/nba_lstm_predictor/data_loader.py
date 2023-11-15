@@ -49,20 +49,19 @@ class NbaLstmPredictorDataLoader(PipelineComponent):
         # Load input data from CSV
         data = self.load_csv(self.input_key)
         state.set(self.component_name, data)
-        print(state)
 
     def load_csv(self, filepath):
         try:
-            print(f'reading csv from {filepath}')
+            self.logger.info(f"reading csv from {filepath}")
             df = pd.read_csv(filepath)
             self.logger.info(f"Loaded CSV, first few rows {df.head()}")
-            print(df.head())
             return df
         except Exception as e:
             self.logger.exception(f"Error loading csv from {filepath}, {e}")
             raise
 
     def _set_constants(self, state):
+        self.logger.info("Setting Constants into State")
         state.set("REQUIRED_COLUMNS", self.REQUIRED_COLUMNS)
         state.set("ADDITIONAL_INPUT_COLUMNS", self.ADDITIONAL_INPUT_COLUMNS)
         state.set("TARGET_FEATURES", BoxScoreTargetFeatures.list())

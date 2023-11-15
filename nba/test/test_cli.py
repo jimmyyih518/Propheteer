@@ -1,7 +1,7 @@
 import boto3
 import os
-from moto import mock_s3
 import pandas as pd
+from moto import mock_s3
 
 
 def is_close(a, b):
@@ -12,7 +12,7 @@ def is_close(a, b):
 
 
 @mock_s3
-def test_cli_run_with_model_key():
+def test_cli_run_with_s3_model_key():
     # Arrange
     from nba.src.cli import parse_args, run
 
@@ -41,6 +41,14 @@ def test_cli_run_with_model_key():
         "artifacts",
         "sample_input_data.csv",
     )
+    sample_output_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "artifacts",
+        "sample_output_data.csv",
+    )
+    sample_output = pd.read_csv(sample_output_file)
 
     test_args = [
         "--model-key",
@@ -61,7 +69,6 @@ def test_cli_run_without_model_key():
     # Should default to local model path
     # Arrange
     from nba.src.cli import parse_args, run
-    from nba.src.constants.box_score_target_features import BoxScoreTargetFeatures
 
     sample_input_file = os.path.join(
         os.path.dirname(__file__),
@@ -87,17 +94,3 @@ def test_cli_run_without_model_key():
 
     # Assert
     assert predictions is not None
-    """
-    print("test output")
-    print(predictions)
-    print("sample output")
-    print(sample_output)
-    for column in BoxScoreTargetFeatures.list():
-        assert all(
-            is_close(x, y)
-            for x, y in zip(
-                predictions["predictions"][column].tolist(),
-                sample_output[column].tolist(),
-            )
-        )
-    """

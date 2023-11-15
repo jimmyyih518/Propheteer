@@ -15,7 +15,14 @@ class NbaLstmPipelineState(PipelineState):
         self.data.pop(key, None)
 
     def __str__(self):
-        return str(self.data.keys()) + '/n' + str(self.data)
-    
+        string_repr = (
+            "State Keys: "
+            + str(self.data.keys())
+            + "/n"
+            + "State Data: "
+            + str(self.data)
+        )
+        return string_repr
+
     def __repr__(self):
-        return str(self.data.keys()) + '/n' + str(self.data)
+        return self.__str__()

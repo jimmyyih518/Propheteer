@@ -1,8 +1,18 @@
 import os
 import argparse
 import logging
-from nba.src.models.nba_predictor import NbaPredictor
-from nba.src.data_processors.sequence_processor import NbaSequenceDataProcessor
+
+from nba.src.pipeline import PipelineOrchestrator
+from nba.src.nba_lstm_predictor import (
+    state_machine,
+    data_loader,
+    feature_processor,
+    sequence_processor,
+    model,
+    output_processor,
+    output_writer,
+)
+
 from nba.src.constants.cli_modes import CliRunModes
 
 
@@ -62,29 +72,39 @@ def run(args):
         if args.country_encoder_key
         else default_country_encoder_path
     )
+    model_path = args.model_key if args.model_key else default_local_model_path
+    logger.info(f"Model path: {model_path}")
     logger.info(f"Input Scaler path: {input_scaler_path}")
     logger.info(f"Team Encoder path: {team_encoder_path}")
     logger.info(f"Country Encoder path: {country_encoder_path}")
-    box_score_sequence_processor = NbaSequenceDataProcessor(
-        input_scaler_path, team_encoder_path, country_encoder_path
-    )
-    logger.info("Instantiated sequence data processor")
 
-    model_path = args.model_key if args.model_key else default_local_model_path
-    logger.info(f"Model path: {model_path}")
-    model = NbaPredictor(
-        model_path=model_path, data_processor=box_score_sequence_processor
+    pipeline_state = state_machine()
+    pipeline_data_loader = data_loader("data_loader")
+    pipeline_feature_processor = feature_processor(
+                component_name="feature_processor",
+                input_scaler_path=input_scaler_path,
+                team_encoder_path=team_encoder_path,
+                country_encoder_path=country_encoder_path,
+            )
+    pipeline_sequence_processor = sequence_processor("sequence_processor")
+    pipeline_model = model("model", model_path=model_path)
+    pipeline_output_processor = output_processor("output_processor")
+    pipeline_output_writer = output_writer("output_writer")
+    pipeline = PipelineOrchestrator(
+        name="nba_lstm_model",
+        input_key=args.input_file,
+        components=[
+            pipeline_data_loader,
+            pipeline_feature_processor,
+            pipeline_sequence_processor,
+            pipeline_model,
+            pipeline_output_processor,
+            pipeline_output_writer,
+        ],
+        return_last_output=True,
     )
-    if args.mode and args.mode == CliRunModes.train:
-        logger.info("Training Model with input data")
-        trained = model.train(args.input_file)
-        logger.info("Model training completed")
-        return trained
-    else:
-        logger.info("Generating predictions")
-        predictions = model.predict(args.input_file)
-        logger.info("Predictions made")
-        return predictions
+
+    return pipeline.process(pipeline_state)
 
 
 if __name__ == "__main__":

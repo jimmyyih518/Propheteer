@@ -12,7 +12,6 @@ class NbaLstmPredictorOutputProcessor(PipelineComponent):
         state.set(self.component_name, processed_data)
 
     def _process_output(self, data, state):
-        print('process output', data)
         predictions = data["predictions"]
         original_targets = data["original_targets"]
         return {

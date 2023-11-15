@@ -17,7 +17,6 @@ class PipelineOrchestrator(PipelineComponent):
                 self.logger.info(
                     f"Processing step {component.component_name} using input {self.last_output_key}"
                 )
-                print(f"Processing step {component.component_name} using input {self.last_output_key}")
                 # Process the component or nested pipeline
                 component.input_key = self.last_output_key
                 self._process_component(component, state)
@@ -27,7 +26,7 @@ class PipelineOrchestrator(PipelineComponent):
 
         except Exception as error:
             # Handle any exceptions that occurred during processing
-            print(f"An error occurred: {error}")
+            self.logger.exception(f"An error occurred: {error}")
         finally:
             self.logger.info("Cleaning up pipeline state")
             # Cleanup: delete intermediate states to free up memory

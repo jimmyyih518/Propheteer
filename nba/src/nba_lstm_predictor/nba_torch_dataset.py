@@ -1,3 +1,4 @@
+import logging
 import numpy as np
 import pandas as pd
 import torch
@@ -51,6 +52,7 @@ class NbaDataset(Dataset):
         self.country_ids = self.process_sequence_to_torch(
             country_ids, torch.long, np.int64
         )
+        self.logger = logging.getLogger(__name__)
 
     def __len__(self) -> int:
         """Returns the total number of samples in the dataset."""
@@ -91,12 +93,12 @@ class NbaDataset(Dataset):
         try:
             return array.astype(num_type)
         except ValueError as e:
-            print("Conversion error:", e)
+            self.logger.warning("Conversion error:", e)
             non_numeric = np.argwhere(
                 ~pd.to_numeric(array.ravel(), errors="coerce").notna()
             )
             for idx in non_numeric:
-                print(f"Non-numeric value at {idx}: {array.ravel()[idx]}")
+                self.logger.warning(f"Non-numeric value at {idx}: {array.ravel()[idx]}")
             return None
 
     def process_sequence_to_torch(
@@ -126,7 +128,7 @@ class NbaDataset(Dataset):
                 else:
                     output.append(torch.tensor(x, dtype=torchtype))
             else:
-                print("Non-array entry:", x)  # print or handle it as necessary
+                self.logger.warning("Non-array entry:", x)
         return output
 
 
