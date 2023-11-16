@@ -35,9 +35,9 @@ class NbaLstmPredictorOutputProcessor(PipelineComponent):
         """
 
         data = state.get(self.input_key)
-        if state.data[self.MODEL_RUNMODE] == ModelRunModes.predict:
+        if state.data[self.MODEL_RUNMODE] == ModelRunModes.predict.value:
             processed_data = self._process_prediction_output(data, state)
-        elif state.data[self.MODEL_RUNMODE] == ModelRunModes.train:
+        elif state.data[self.MODEL_RUNMODE] == ModelRunModes.train.value:
             processed_data = self._process_training_output(data, state)
         else:
             raise ValueError(f"Input model mode not one of {ModelRunModes.list()}")
@@ -79,9 +79,4 @@ class NbaLstmPredictorOutputProcessor(PipelineComponent):
             Dict[str, Any]: A dictionary containing processed training data.
         """
 
-        train_loss = data.train_losses
-        validation_loss = data.val_losses
-        return {
-            "train_loss": train_loss,
-            "validation_loss": validation_loss,
-        }
+        return {"model": data}

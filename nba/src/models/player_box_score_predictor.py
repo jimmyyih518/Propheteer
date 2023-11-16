@@ -147,8 +147,8 @@ class PlayerBoxScoreLSTM(nn.Module, BaseModel):
         self,
         train_loader: DataLoader,
         val_loader: Optional[DataLoader] = None,
-        learning_rate: float = 0.01,
-        epochs: int = 5000,
+        learning_rate: float = 0.00005,
+        epochs: int = 2,
     ) -> None:
         """
         Train the model using the given training data loader and optional validation data loader.

@@ -13,7 +13,7 @@ def is_close(a, b):
 
 
 @mock_s3
-def test_cli_run_with_s3_model_key():
+def test_cli_predict_with_s3_model_key():
     # Arrange
     from nba.src.cli import parse_args, run
 
@@ -67,9 +67,12 @@ def test_cli_run_with_s3_model_key():
 
     # Assert
     assert predictions is not None
+    assert isinstance(predictions, dict)
+    assert "predictions" in predictions
+    assert isinstance(predictions["predictions"], pd.DataFrame)
 
 
-def test_cli_run_without_model_key():
+def test_cli_predict_without_model_key():
     # Should default to local model path
     # Arrange
     from nba.src.cli import parse_args, run
@@ -100,10 +103,13 @@ def test_cli_run_without_model_key():
 
     # Assert
     assert predictions is not None
+    assert isinstance(predictions, dict)
+    assert "predictions" in predictions
+    assert isinstance(predictions["predictions"], pd.DataFrame)
 
 
 @mock_s3
-def test_cli_run_with_s3_input_key():
+def test_cli_predict_with_s3_input_key():
     # Arrange
     from nba.src.cli import parse_args, run
 
@@ -149,3 +155,6 @@ def test_cli_run_with_s3_input_key():
 
     # Assert
     assert predictions is not None
+    assert isinstance(predictions, dict)
+    assert "predictions" in predictions
+    assert isinstance(predictions["predictions"], pd.DataFrame)

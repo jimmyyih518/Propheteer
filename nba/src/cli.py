@@ -42,7 +42,7 @@ def parse_args(args=None):
         "mode",
         type=str,
         choices=ModelRunModes.list(),
-        default=ModelRunModes.predict,
+        default=ModelRunModes.predict.value,
         nargs="?",
         help="Operation mode, 'train' or 'predict'. Defaults to 'predict'.",
     )
@@ -70,6 +70,12 @@ def parse_args(args=None):
     parser.add_argument(
         "--input-file", type=str, required=True, help="S3 key for input file"
     )
+    parser.add_argument(
+        "--learning-rate", type=float, required=False, help="Learning Rate for Training"
+    )
+    parser.add_argument(
+        "--epochs", type=int, required=False, help="Epochs for Training"
+    )
     return parser.parse_args(args)
 
 
@@ -89,7 +95,7 @@ def run(args):
     model_config_path = (
         args.model_config if args.model_config else default_local_model_json
     )
-    logger.info(f"Model path: {model_path}")
+    logger.info(f"Model path: {model_path}, invoking for mode {args.mode}")
     logger.info(f"Input Scaler path: {input_scaler_path}")
     logger.info(f"Team Encoder path: {team_encoder_path}")
     logger.info(f"Country Encoder path: {country_encoder_path}")

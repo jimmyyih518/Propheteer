@@ -24,7 +24,7 @@ class NbaLstmPredictorModel(PipelineComponent):
         input_key: Optional[str] = None,
         model_path: Optional[str] = None,
         model_config_path: Optional[str] = None,
-        model_mode: ModelRunModes = ModelRunModes.predict,
+        model_mode: str = ModelRunModes.predict.value,
     ):
         """
         Initialize the model component.
@@ -59,12 +59,14 @@ class NbaLstmPredictorModel(PipelineComponent):
         data = state.get(self.input_key)
         state.set("MODEL_RUNMODE", self.model_mode)
 
-        if self.model_mode == ModelRunModes.predict:
+        if self.model_mode == ModelRunModes.predict.value:
             processed_data = self._predict(data, state)
-        elif self.model_mode == ModelRunModes.train:
+        elif self.model_mode == ModelRunModes.train.value:
             processed_data = self._train(data, state)
         else:
-            raise ValueError(f"Input model mode not one of {ModelRunModes.list()}")
+            raise ValueError(
+                f"Input model mode {self.model_mode} not one of {ModelRunModes.list()}"
+            )
 
         state.set(self.component_name, processed_data)
 
@@ -132,7 +134,7 @@ class NbaLstmPredictorModel(PipelineComponent):
             "original_targets": original_targets,
         }
 
-    def _train(self, data: Any, **kwargs) -> PlayerBoxScoreLSTM:
+    def _train(self, data: Any, state: Any, **kwargs) -> PlayerBoxScoreLSTM:
         """
         Train the model with the given data.
 
@@ -148,4 +150,6 @@ class NbaLstmPredictorModel(PipelineComponent):
         # learning_rate=0.0001
         # epochs=1000
         self.model.train(train_loader=data, **kwargs)
+        self.logger.info(f"Final Train Loss: {self.model.train_losses[-1]}")
+        self.logger.info(f"Final Validation Loss: {self.model.val_losses[-1]}")
         return self.model

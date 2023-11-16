@@ -1,6 +1,9 @@
 import os
 import sys
 import pytest
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
 
 
 @pytest.fixture(autouse=True)
