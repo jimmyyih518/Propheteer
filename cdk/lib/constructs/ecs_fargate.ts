@@ -53,6 +53,7 @@ export class CreateEcsService extends Construct {
     this.ecsService = new ecs.FargateService(this, `${props.name}EcsService`, {
       cluster: EcsCluster,
       taskDefinition: TaskDefinition,
+      desiredCount: 0,
     });
 
     this.ecsArn = this.ecsService.serviceArn;
