@@ -5,6 +5,9 @@ import logging
 
 logging.basicConfig(level=logging.DEBUG)
 
+# Run test on cpu only
+os.environ['CUDA_VISIBLE_DEVICES'] = ''
+
 
 @pytest.fixture(autouse=True)
 def set_up_paths():

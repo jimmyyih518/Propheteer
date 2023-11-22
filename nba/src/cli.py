@@ -3,7 +3,7 @@ import argparse
 import logging
 
 from nba.src.pipeline import PipelineOrchestrator
-from nba.src.nba_lstm_predictor import (
+from nba.src.nba_lstm_predictor_v2 import (
     state_machine,
     data_loader,
     feature_processor,
@@ -18,19 +18,16 @@ from nba.src.constants.model_modes import ModelRunModes
 
 dir_path = os.path.dirname(os.path.realpath(__file__))
 default_local_model_path = os.path.join(
-    dir_path, "artifacts/nba_lstm_predictor/player_box_score_predictor_state_dict.pth"
+    dir_path, "artifacts/nba_lstm_predictor_v2/lstm_model_branched_state_dict.pth"
 )
 default_local_model_json = os.path.join(
-    dir_path, "artifacts/nba_lstm_predictor/player_box_score_predictor_config.json"
+    dir_path, "artifacts/nba_lstm_predictor_v2/lstm_model_branched_config.json"
 )
 default_input_scaler_path = os.path.join(
-    dir_path, "artifacts/nba_lstm_predictor/lstm_input_scaler.pkl"
+    dir_path, "artifacts/nba_lstm_predictor_v2/minmax_scaler.pkl"
 )
-default_team_encoder_path = os.path.join(
-    dir_path, "artifacts/nba_lstm_predictor/lstm_team_encoder.pkl"
-)
-default_country_encoder_path = os.path.join(
-    dir_path, "artifacts/nba_lstm_predictor/lstm_country_encoder.pkl"
+default_player_encoder_path = os.path.join(
+    dir_path, "artifacts/nba_lstm_predictor_v2/player_encoder_mapping.json"
 )
 
 logger = logging.getLogger(__name__)
@@ -83,13 +80,8 @@ def run(args):
     input_scaler_path = (
         args.input_scaler_key if args.input_scaler_key else default_input_scaler_path
     )
-    team_encoder_path = (
-        args.team_encoder_key if args.team_encoder_key else default_team_encoder_path
-    )
-    country_encoder_path = (
-        args.country_encoder_key
-        if args.country_encoder_key
-        else default_country_encoder_path
+    player_encoder_path = (
+        args.team_encoder_key if args.team_encoder_key else default_player_encoder_path
     )
     model_path = args.model_key if args.model_key else default_local_model_path
     model_config_path = (
@@ -97,16 +89,14 @@ def run(args):
     )
     logger.info(f"Model path: {model_path}, invoking for mode {args.mode}")
     logger.info(f"Input Scaler path: {input_scaler_path}")
-    logger.info(f"Team Encoder path: {team_encoder_path}")
-    logger.info(f"Country Encoder path: {country_encoder_path}")
+    logger.info(f"Player Encoder path: {player_encoder_path}")
 
     pipeline_state = state_machine()
     pipeline_data_loader = data_loader("data_loader")
     pipeline_feature_processor = feature_processor(
         component_name="feature_processor",
         input_scaler_path=input_scaler_path,
-        team_encoder_path=team_encoder_path,
-        country_encoder_path=country_encoder_path,
+        player_encoder_path=player_encoder_path,
     )
     pipeline_sequence_processor = sequence_processor("sequence_processor")
     pipeline_model = model(

@@ -27,8 +27,8 @@ def test_cli_predict_with_s3_model_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
-        "player_box_score_predictor_state_dict.pth",
+        "nba_lstm_predictor_v2",
+        "lstm_model_branched_state_dict.pth",
     )
     with open(model_path, "rb") as f:
         model_state_dict = f.read()
@@ -41,7 +41,7 @@ def test_cli_predict_with_s3_model_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_input_data.csv",
     )
     sample_output_file = os.path.join(
@@ -49,7 +49,7 @@ def test_cli_predict_with_s3_model_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_output_data.csv",
     )
     sample_output = pd.read_csv(sample_output_file)
@@ -82,7 +82,7 @@ def test_cli_predict_without_model_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_input_data.csv",
     )
     sample_output_file = os.path.join(
@@ -90,7 +90,7 @@ def test_cli_predict_without_model_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_output_data.csv",
     )
     sample_output = pd.read_csv(sample_output_file)
@@ -106,6 +106,12 @@ def test_cli_predict_without_model_key():
     assert isinstance(predictions, dict)
     assert "predictions" in predictions
     assert isinstance(predictions["predictions"], pd.DataFrame)
+    pd.testing.assert_frame_equal(
+        predictions["predictions"],
+        sample_output,
+        check_dtype=False,
+        check_column_type=False,
+    )
 
 
 @mock_s3
@@ -123,7 +129,7 @@ def test_cli_predict_with_s3_input_key():
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_input_data.csv",
     )
     sample_data = pd.read_csv(sample_data_file)
@@ -133,13 +139,12 @@ def test_cli_predict_with_s3_input_key():
     # Upload the state dict to the mocked S3
     s3.put_object(Bucket=bucket_name, Key=file_key, Body=csv_buffer.getvalue())
 
-
     sample_output_file = os.path.join(
         os.path.dirname(__file__),
         "..",
         "src",
         "artifacts",
-        "nba_lstm_predictor",
+        "nba_lstm_predictor_v2",
         "sample_output_data.csv",
     )
     sample_output = pd.read_csv(sample_output_file)
