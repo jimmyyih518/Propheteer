@@ -1,4 +1,5 @@
 # Propheteer
+A model for predicting NBA Player boxscore stats, deployed on AWS (WIP)
 
 Test docker image build locally:
 
