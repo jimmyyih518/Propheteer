@@ -2,6 +2,8 @@ import os
 import sys
 import pytest
 import logging
+import boto3
+from moto import mock_s3
 
 logging.basicConfig(level=logging.DEBUG)
 

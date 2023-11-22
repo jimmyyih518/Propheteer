@@ -1,4 +1,6 @@
 import logging
+import uuid
+from datetime import datetime
 from typing import Optional, Any
 from abc import ABC, abstractmethod
 
@@ -26,7 +28,8 @@ class PipelineState(ABC):
         """
 
         self.logger = logging.getLogger(__name__)
-        self.state_name = state_name
+        self.state_name = state_name if state_name else ""
+        self._init_state_id()
         self._init_state()
 
     def _init_state(self, state_type=None) -> None:
@@ -110,3 +113,12 @@ class PipelineState(ABC):
         except KeyError:
             self.logger.error(f"Key {item} not found in state data.")
             raise AttributeError(f"State attribute '{item}' not found.")
+
+    def _init_state_id(self) -> None:
+        state_id_components = [
+            self.state_name,
+            str(uuid.uuid4()),
+            datetime.now().isoformat(),
+        ]
+        self.state_id = "_".join([value for value in state_id_components if value])
+        self.logger.info(f"Initialized pipeline ID: {self.state_id}")

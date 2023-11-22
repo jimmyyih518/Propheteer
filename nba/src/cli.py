@@ -73,6 +73,9 @@ def parse_args(args=None):
     parser.add_argument(
         "--epochs", type=int, required=False, help="Epochs for Training"
     )
+    parser.add_argument(
+        "--output-file", type=str, required=False, help="S3 key for output file"
+    )
     return parser.parse_args(args)
 
 
@@ -92,6 +95,7 @@ def run(args):
     logger.info(f"Player Encoder path: {player_encoder_path}")
 
     pipeline_state = state_machine()
+    print('state id', pipeline_state.state_id)
     pipeline_data_loader = data_loader("data_loader")
     pipeline_feature_processor = feature_processor(
         component_name="feature_processor",
@@ -106,7 +110,7 @@ def run(args):
         model_mode=args.mode,
     )
     pipeline_output_processor = output_processor("output_processor")
-    pipeline_output_writer = output_writer("output_writer")
+    pipeline_output_writer = output_writer("output_writer", args.output_file)
     pipeline = PipelineOrchestrator(
         name="nba_lstm_model",
         input_key=args.input_file,

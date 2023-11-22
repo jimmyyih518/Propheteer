@@ -5,11 +5,15 @@ import pandas as pd
 from moto import mock_s3
 
 
+@mock_s3
 def test_cli_train_without_model_key():
     # Should default to local model path
     # Arrange
     from nba.src.cli import parse_args, run
     from nba.src.models.nba_lstm_branched import PlayerEmbeddingLSTM
+
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="model-artifacts")
 
     sample_input_file = os.path.join(
         os.path.dirname(__file__),

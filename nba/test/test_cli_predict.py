@@ -21,6 +21,7 @@ def test_cli_predict_with_s3_model_key():
     model_key = "model.pth"
     s3 = boto3.client("s3", region_name="us-east-1")
     s3.create_bucket(Bucket=bucket_name)
+    s3.create_bucket(Bucket="model-predictions")
     # Read the real state dict file
     model_path = os.path.join(
         os.path.dirname(__file__),
@@ -72,10 +73,14 @@ def test_cli_predict_with_s3_model_key():
     assert isinstance(predictions["predictions"], pd.DataFrame)
 
 
+@mock_s3
 def test_cli_predict_without_model_key():
     # Should default to local model path
     # Arrange
     from nba.src.cli import parse_args, run
+
+    s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="model-predictions")
 
     sample_input_file = os.path.join(
         os.path.dirname(__file__),
@@ -122,6 +127,7 @@ def test_cli_predict_with_s3_input_key():
     bucket_name = "mybucket"
     file_key = "input.csv"
     s3 = boto3.client("s3", region_name="us-east-1")
+    s3.create_bucket(Bucket="model-predictions")
     s3.create_bucket(Bucket=bucket_name)
     # Read the real state dict file
     sample_data_file = os.path.join(
