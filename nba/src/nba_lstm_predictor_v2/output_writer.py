@@ -35,12 +35,12 @@ class NbaLstmPredictorOutputWriter(PipelineComponent):
         self.run_mode = state.MODEL_RUNMODE
         self.output_key = state.state_id
         self.bucket = self.bucket if self.bucket else S3_OUTPUT_BUCKET[self.run_mode]
-        print('s3 bucket output', self.bucket)
         self.file_key = self.output_key + OUTPUT_FILE_EXT[self.run_mode]
         response = self._write_output(data)
-        state.set(self.component_name, data)
+        state.set(self.component_name, response)
 
     def _write_output(self, data):
+        self.logger.info(f"Writing output to s3")
         if self.run_mode == ModelRunModes.predict.value:
             return self._write_prediction(data)
         elif self.run_mode == ModelRunModes.train.value:
@@ -50,10 +50,20 @@ class NbaLstmPredictorOutputWriter(PipelineComponent):
         with tempfile.NamedTemporaryFile() as tmp:
             data["predictions"].to_csv(tmp.name, index=False)
             tmp.seek(0)  # Rewind the file to the beginning
-            return self.s3.upload_fileobj(tmp, self.bucket, self.file_key)
+            return {
+                "s3_bucket": self.bucket,
+                "s3_key": self.file_key,
+                "s3_uri": f"s3://{self.bucket}/{self.file_key}",
+                "response": self.s3.upload_fileobj(tmp, self.bucket, self.file_key),
+            }
 
     def _write_model(self, data):
         with tempfile.NamedTemporaryFile() as tmp:
-            torch.save(data["model"].state_dict, tmp.name)
+            torch.save(data["model"].state_dict(), tmp.name)
             tmp.seek(0)  # Rewind the file to the beginning
-            return self.s3.upload_fileobj(tmp, self.bucket, self.file_key)
+            return {
+                "s3_bucket": self.bucket,
+                "s3_key": self.file_key,
+                "s3_uri": f"s3://{self.bucket}/{self.file_key}",
+                "response": self.s3.upload_fileobj(tmp, self.bucket, self.file_key),
+            }

@@ -1,6 +1,7 @@
 import boto3
 import os
 import io
+import tempfile
 import pandas as pd
 from moto import mock_s3
 
@@ -64,13 +65,18 @@ def test_cli_predict_with_s3_model_key():
 
     # Act
     args = parse_args(test_args)
-    predictions = run(args)
+    results = run(args)
+
+    with tempfile.NamedTemporaryFile() as temp_file:
+        # Download the file from S3 to the temporary file
+        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        # Read the CSV file into a DataFrame
+        predictions = pd.read_csv(temp_file.name)
 
     # Assert
-    assert predictions is not None
-    assert isinstance(predictions, dict)
-    assert "predictions" in predictions
-    assert isinstance(predictions["predictions"], pd.DataFrame)
+    assert results is not None
+    assert isinstance(results, dict)
+    assert isinstance(predictions, pd.DataFrame)
 
 
 @mock_s3
@@ -104,15 +110,20 @@ def test_cli_predict_without_model_key():
 
     # Act
     args = parse_args(test_args)
-    predictions = run(args)
+    results = run(args)
+
+    with tempfile.NamedTemporaryFile() as temp_file:
+        # Download the file from S3 to the temporary file
+        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        # Read the CSV file into a DataFrame
+        predictions = pd.read_csv(temp_file.name)
 
     # Assert
-    assert predictions is not None
-    assert isinstance(predictions, dict)
-    assert "predictions" in predictions
-    assert isinstance(predictions["predictions"], pd.DataFrame)
+    assert results is not None
+    assert isinstance(results, dict)
+    assert isinstance(predictions, pd.DataFrame)
     pd.testing.assert_frame_equal(
-        predictions["predictions"],
+        predictions,
         sample_output,
         check_dtype=False,
         check_column_type=False,
@@ -162,10 +173,21 @@ def test_cli_predict_with_s3_input_key():
 
     # Act
     args = parse_args(test_args)
-    predictions = run(args)
+    results = run(args)
+
+    with tempfile.NamedTemporaryFile() as temp_file:
+        # Download the file from S3 to the temporary file
+        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        # Read the CSV file into a DataFrame
+        predictions = pd.read_csv(temp_file.name)
 
     # Assert
-    assert predictions is not None
-    assert isinstance(predictions, dict)
-    assert "predictions" in predictions
-    assert isinstance(predictions["predictions"], pd.DataFrame)
+    assert results is not None
+    assert isinstance(results, dict)
+    assert isinstance(predictions, pd.DataFrame)
+    pd.testing.assert_frame_equal(
+        predictions,
+        sample_output,
+        check_dtype=False,
+        check_column_type=False,
+    )
