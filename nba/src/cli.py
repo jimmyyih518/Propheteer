@@ -82,10 +82,14 @@ def parse_args(args=None):
         required=False,
         help="Local directory for pipeline state",
     )
+    parser.add_argument("--gpu", action="store_true", help="use GPU for compute")
     return parser.parse_args(args)
 
 
 def run(args):
+    if not args.gpu:
+        os.environ["CUDA_VISIBLE_DEVICES"] = ""
+
     input_scaler_path = (
         args.input_scaler_key if args.input_scaler_key else default_input_scaler_path
     )
