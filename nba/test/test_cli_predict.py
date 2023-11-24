@@ -185,6 +185,9 @@ def test_cli_predict_with_s3_input_key():
     assert results is not None
     assert isinstance(results, dict)
     assert isinstance(predictions, pd.DataFrame)
+    print('predictions', predictions)
+    print('sample_output', sample_output)
+
     pd.testing.assert_frame_equal(
         predictions,
         sample_output,

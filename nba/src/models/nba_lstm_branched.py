@@ -22,7 +22,7 @@ torch_target_scaler = {
 logger = logging.getLogger(__name__)
 
 
-class PlayerEmbeddingLSTM(nn.Module, BaseModel):
+class PlayerEmbeddingLSTM(nn.Module):
     def __init__(
         self,
         input_size,
@@ -36,10 +36,17 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
         lstm_layers=1,
         branch_lstm_hidden_dim=16,
         torch_target_scaler=[81, 31, 25, 10, 12],
+        custom_weights=None,
+        optimizer="Adam",
         verbose=False,
     ):
         super(PlayerEmbeddingLSTM, self).__init__()
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        self.optimizer_choice = optimizer
+        if custom_weights:
+            self.custom_weights = torch.tensor(custom_weights).to(self.device)
+        else:
+            self.custom_weights = torch.tensor([1, 1, 1, 1, 1]).to(self.device)
         self.dropout = nn.Dropout(dropout)
         self.player_embedding = nn.Embedding(max_num_players, player_embedding_dim)
         self.scale_factors = torch.tensor(torch_target_scaler, dtype=torch.float32).to(
@@ -126,11 +133,19 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
         return pts, reb, ast, stl, blk
 
     def train(self, train_loader, val_loader=None, learning_rate=0.0001, epochs=10):
+        nn.Module.train(self, mode=True)
         self.to(self.device)
         criterion = nn.MSELoss()
-        # optimizer = optim.Adam(self.parameters(), lr=learning_rate)
-        # optimizer = optim.RMSprop(self.parameters(), lr=learning_rate)
-        optimizer = optim.AdamW(self.parameters(), lr=learning_rate, weight_decay=1e-5)
+        if self.optimizer_choice == "Adam":
+            optimizer = optim.Adam(self.parameters(), lr=learning_rate)
+        elif self.optimizer_choice == "RMSprop":
+            optimizer = optim.RMSprop(self.parameters(), lr=learning_rate)
+        elif self.optimizer_choice == "AdamW":
+            optimizer = optim.AdamW(
+                self.parameters(), lr=learning_rate, weight_decay=1e-5
+            )
+        else:
+            optimizer = optim.Adam(self.parameters(), lr=learning_rate)
         scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(
             optimizer, "min", patience=5
         )
@@ -159,7 +174,13 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
                 loss_stl = torch.sqrt(criterion(outputs_stl[:, -1, 3], Y_batch[:, 3]))
                 loss_blk = torch.sqrt(criterion(outputs_blk[:, -1, 4], Y_batch[:, 4]))
                 # Combine losses
-                total_loss = loss_pts + loss_reb + loss_ast + loss_stl + loss_blk
+                total_loss = (
+                    loss_pts * self.custom_weights[0]
+                    + loss_reb * self.custom_weights[1]
+                    + loss_ast * self.custom_weights[2]
+                    + loss_stl * self.custom_weights[3]
+                    + loss_blk * self.custom_weights[4]
+                )
 
                 optimizer.zero_grad()
                 total_loss.backward()
@@ -198,7 +219,13 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
                     loss_blk = torch.sqrt(criterion(outputs_blk[:, -1, 4], Y_val[:, 4]))
 
                     # Combine losses
-                    val_loss = loss_pts + loss_reb + loss_ast + loss_stl + loss_blk
+                    val_loss = (
+                        loss_pts * self.custom_weights[0]
+                        + loss_reb * self.custom_weights[1]
+                        + loss_ast * self.custom_weights[2]
+                        + loss_stl * self.custom_weights[3]
+                        + loss_blk * self.custom_weights[4]
+                    )
                     total_val_loss += val_loss.item()
 
                 avg_val_loss = total_val_loss / len(val_loader)
@@ -209,15 +236,17 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
                 scheduler.step(avg_train_loss)
 
             if (epoch + 1) % 20 == 0 and self.verbose:
-                logger.info(
-                    f"Epoch [{epoch+1}/{epochs}], Train Loss: {avg_train_loss.item():.4f}",
-                    end="",
+                print(
+                    f"Epoch [{epoch+1}/{epochs}], Train Loss: {loss.item():.4f}", end=""
                 )
                 if val_loader:
-                    logger.info(f", Val Loss: {avg_val_loss:.4f}")
+                    print(f", Val Loss: {avg_val_loss:.4f}")
+                else:
+                    print()
 
     def predict(self, dataloader):
-        self.eval()
+        nn.Module.train(self, mode=False)
+
         # Initialize lists to store predictions and targets for each stat
         (
             all_predictions_pts,
@@ -309,7 +338,3 @@ class PlayerEmbeddingLSTM(nn.Module, BaseModel):
         self.to(self.device)
         if self.verbose:
             logger.info(f"Model loaded from {file_path} to {self.device}")
-
-    def eval(self):
-        nn.Module.train(self, mode=False)
-

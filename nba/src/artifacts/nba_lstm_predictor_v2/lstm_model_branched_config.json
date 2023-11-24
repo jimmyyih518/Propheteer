@@ -1,13 +1,14 @@
 {
     "input_size": 28,
     "output_size": 5,
-    "max_hidden_size": 16,
+    "max_hidden_size": 64,
     "dropout": 0.4,
     "max_num_players": 2500,
     "player_embedding_dim": 32,
-    "clip_value": 2,
-    "lstm_hidden_dim": 16,
+    "clip_value": 1,
+    "lstm_hidden_dim": 32,
     "lstm_layers": 1,
-    "branch_lstm_hidden_dim": 8,
+    "branch_lstm_hidden_dim": 16,
+    "optimizer": "RMSprop",
     "verbose": false
 }
