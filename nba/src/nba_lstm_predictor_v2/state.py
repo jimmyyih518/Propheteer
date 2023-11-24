@@ -9,14 +9,16 @@ class NbaLstmPipelineState(PipelineState):
     This class provides methods to get, set, and remove data from the state, as well as to represent the state as a string.
     """
 
-    def __init__(self, state_name: Optional[str] = None):
+    def __init__(
+        self, state_name: Optional[str] = None, local_dir: Optional[str] = None
+    ):
         """
         Initialize the NBA LSTM pipeline state.
 
         Args:
             state_name (Optional[str]): The name of the state. Defaults to None.
         """
-        super().__init__(state_name)
+        super().__init__(state_name, local_dir)
 
     def get(self, key: str) -> Any:
         """

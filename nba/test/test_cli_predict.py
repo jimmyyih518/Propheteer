@@ -5,6 +5,8 @@ import tempfile
 import pandas as pd
 from moto import mock_s3
 
+from conftest import DEFAULT_TEST_DIR
+
 
 def is_close(a, b):
     if abs(a) > 0:
@@ -69,7 +71,7 @@ def test_cli_predict_with_s3_model_key():
 
     with tempfile.NamedTemporaryFile() as temp_file:
         # Download the file from S3 to the temporary file
-        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        s3.download_file(results["s3_bucket"], results["s3_key"], temp_file.name)
         # Read the CSV file into a DataFrame
         predictions = pd.read_csv(temp_file.name)
 
@@ -114,7 +116,7 @@ def test_cli_predict_without_model_key():
 
     with tempfile.NamedTemporaryFile() as temp_file:
         # Download the file from S3 to the temporary file
-        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        s3.download_file(results["s3_bucket"], results["s3_key"], temp_file.name)
         # Read the CSV file into a DataFrame
         predictions = pd.read_csv(temp_file.name)
 
@@ -177,7 +179,7 @@ def test_cli_predict_with_s3_input_key():
 
     with tempfile.NamedTemporaryFile() as temp_file:
         # Download the file from S3 to the temporary file
-        s3.download_file(results['s3_bucket'], results['s3_key'], temp_file.name)
+        s3.download_file(results["s3_bucket"], results["s3_key"], temp_file.name)
         # Read the CSV file into a DataFrame
         predictions = pd.read_csv(temp_file.name)
 
@@ -185,8 +187,8 @@ def test_cli_predict_with_s3_input_key():
     assert results is not None
     assert isinstance(results, dict)
     assert isinstance(predictions, pd.DataFrame)
-    print('predictions', predictions)
-    print('sample_output', sample_output)
+    print("predictions", predictions)
+    print("sample_output", sample_output)
 
     pd.testing.assert_frame_equal(
         predictions,
@@ -194,3 +196,47 @@ def test_cli_predict_with_s3_input_key():
         check_dtype=False,
         check_column_type=False,
     )
+
+
+@mock_s3
+def test_cli_predict_without_model_key_with_local_output():
+    # Should default to local model path
+    # Arrange
+    from nba.src.cli import parse_args, run
+
+    sample_input_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "artifacts",
+        "nba_lstm_predictor_v2",
+        "sample_input_data.csv",
+    )
+    sample_output_file = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "src",
+        "artifacts",
+        "nba_lstm_predictor_v2",
+        "sample_output_data.csv",
+    )
+    sample_output = pd.read_csv(sample_output_file)
+
+    test_args = ["--input-file", sample_input_file, "--local-dir", DEFAULT_TEST_DIR]
+
+    # Act
+    args = parse_args(test_args)
+    results = run(args)
+    predictions = pd.read_csv(results["output"])
+
+    # Assert
+    assert results is not None
+    assert isinstance(results, dict)
+    assert isinstance(predictions, pd.DataFrame)
+    pd.testing.assert_frame_equal(
+        predictions,
+        sample_output,
+        check_dtype=False,
+        check_column_type=False,
+    )
+

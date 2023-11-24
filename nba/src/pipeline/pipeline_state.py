@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 
 
 class PipelineState(ABC):
+    DEFAULT_DIR: str = "s3"
+
     """
     An abstract base class representing the state of a pipeline.
 
@@ -19,7 +21,7 @@ class PipelineState(ABC):
         data (dict): The internal dictionary to store state data.
     """
 
-    def __init__(self, state_name: Optional[str] = None):
+    def __init__(self, state_name: Optional[str] = None, local_dir=None):
         """
         Initialize the PipelineState.
 
@@ -29,7 +31,7 @@ class PipelineState(ABC):
 
         self.logger = logging.getLogger(__name__)
         self.state_name = state_name if state_name else ""
-        self._init_state_id()
+        self._init_state_id(local_dir)
         self._init_state()
 
     def _init_state(self, state_type=None) -> None:
@@ -114,8 +116,10 @@ class PipelineState(ABC):
             self.logger.error(f"Key {item} not found in state data.")
             raise AttributeError(f"State attribute '{item}' not found.")
 
-    def _init_state_id(self) -> None:
+    def _init_state_id(self, local_dir) -> None:
+        state_dir = local_dir if local_dir else self.DEFAULT_DIR
         state_id_components = [
+            state_dir,
             self.state_name,
             str(uuid.uuid4()),
             datetime.now().isoformat(),

@@ -76,6 +76,12 @@ def parse_args(args=None):
     parser.add_argument(
         "--output-file", type=str, required=False, help="S3 key for output file"
     )
+    parser.add_argument(
+        "--local-dir",
+        type=str,
+        required=False,
+        help="Local directory for pipeline state",
+    )
     return parser.parse_args(args)
 
 
@@ -94,8 +100,8 @@ def run(args):
     logger.info(f"Input Scaler path: {input_scaler_path}")
     logger.info(f"Player Encoder path: {player_encoder_path}")
 
-    pipeline_state = state_machine()
-    print('state id', pipeline_state.state_id)
+    pipeline_state = state_machine(local_dir=args.local_dir)
+    print("state id", pipeline_state.state_id)
     pipeline_data_loader = data_loader("data_loader")
     pipeline_feature_processor = feature_processor(
         component_name="feature_processor",
