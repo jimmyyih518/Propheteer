@@ -26,12 +26,13 @@ Inference Mode:
 
 `./scripts/run.sh runfiles/sample_input_data.csv predict --output-file runfiles/mypredictions`
 
-An output `.csv` predictions table will be saved into the `runfiles` directory
+- An output `.csv` predictions table will be saved into the `runfiles` directory
 
 Train Mode:
+
 `./scripts/run.sh runfiles/sample_train_data.csv train --epochs 10 --learning-rate 0.0001 --seq-batch-size 32 --output-file runfiles/trained_model`
 
-An output `.pth` state dict of the trained model will be saved into the `runfiles` directory
+- An output `.pth` state dict of the trained model will be saved into the `runfiles` directory
 
 #### Running model in local python environment
 Inference Mode:
