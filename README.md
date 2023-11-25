@@ -24,14 +24,14 @@ Deploy docker image to ECR (assumes AWS CDK deployment has completed, see [cdk R
 
 Inference Mode:
 
-`./scripts/run.sh runfiles/sample_input_data.csv predict --output-file runfiles/mypredictions`
-
+- Prepare a csv file for inferene input, formatted like [sample input file](https://github.com/jimmyyih518/Propheteer/blob/main/runfiles/sample_input_data.csv)
+- `./scripts/run.sh runfiles/sample_input_data.csv predict --output-file runfiles/mypredictions`
 - An output `.csv` predictions table will be saved into the `runfiles` directory
 
 Train Mode:
 
-`./scripts/run.sh runfiles/sample_train_data.csv train --epochs 10 --learning-rate 0.0001 --seq-batch-size 32 --output-file runfiles/trained_model`
-
+- Prepare a csv file for training input, formatted like [sample training file](https://github.com/jimmyyih518/Propheteer/blob/main/runfiles/sample_train_data.csv)
+- `./scripts/run.sh runfiles/sample_train_data.csv train --epochs 10 --learning-rate 0.0001 --seq-batch-size 32 --output-file runfiles/trained_model`
 - An output `.pth` state dict of the trained model will be saved into the `runfiles` directory
 
 #### Running model in local python environment
