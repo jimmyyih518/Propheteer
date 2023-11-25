@@ -19,5 +19,5 @@ COPY ../nba/ ./nba
 # Make port available to the world outside this container
 EXPOSE 80
 
-# Run inference.py when the container launches
-CMD ["python", "nba/src/cli.py", "--input-file-key", "test-file"]
+# Run cli.py when the container launches (to be overriden when actuall running)
+CMD ["python", "nba/src/cli.py", "--input-file-key", "sample-input-file.csv"]
