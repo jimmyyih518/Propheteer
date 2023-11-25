@@ -25,6 +25,7 @@ class NbaLstmPredictorModel(PipelineComponent):
         model_path: Optional[str] = None,
         model_config_path: Optional[str] = None,
         model_mode: str = ModelRunModes.predict.value,
+        **kwargs,
     ):
         """
         Initialize the model component.
@@ -49,6 +50,7 @@ class NbaLstmPredictorModel(PipelineComponent):
         self.logger.info(f"Loading model on initialization for {model_mode}")
         self.model_mode = model_mode
         self._load_model(model_path)
+        self._custom_model_kwargs = kwargs
 
     def process(self, state: Any) -> None:
         """
@@ -64,7 +66,7 @@ class NbaLstmPredictorModel(PipelineComponent):
         if self.model_mode == ModelRunModes.predict.value:
             processed_data = self._predict(data, state)
         elif self.model_mode == ModelRunModes.train.value:
-            processed_data = self._train(data, state)
+            processed_data = self._train(data, state, **self._custom_model_kwargs)
         else:
             raise ValueError(
                 f"Input model mode {self.model_mode} not one of {ModelRunModes.list()}"

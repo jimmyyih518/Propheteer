@@ -34,7 +34,8 @@ class NbaLstmPredictorOutputWriter(PipelineComponent):
     def process(self, state: Any) -> None:
         data = state.get(self.input_key)
         self.run_mode = state.MODEL_RUNMODE
-        self.output_key = state.state_id
+        self.output_key = self.output_key if self.output_key else state.state_id
+        self.logger.info(f"Using output file key {self.output_key}")
         self.bucket = self.bucket if self.bucket else S3_OUTPUT_BUCKET[self.run_mode]
         self.file_key = self.output_key + OUTPUT_FILE_EXT[self.run_mode]
         response = self._write_output(data)

@@ -14,23 +14,24 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
     This component processes the input data into sequences suitable for LSTM training or prediction.
     """
 
-    def __init__(self, component_name: str, input_key: Optional[str] = None):
+    def __init__(self, component_name: str, input_key: Optional[str] = None, batch_size:int = 128):
         """
         Initialize the sequence processor.
 
         Args:
             component_name (str): The name of the component.
             input_key (Optional[str]): The input key for the data source. Defaults to None.
+            batch_size (int): The batch size for the DataLoader. Defaults to 128.
         """
         super().__init__(component_name, input_key)
+        self.batch_size = batch_size
 
-    def process(self, state: Any, batch_size: int = 128) -> None:
+    def process(self, state: Any) -> None:
         """
         Process the input data into sequences and create a DataLoader for the LSTM model.
 
         Args:
             state (Any): The state object containing pipeline state.
-            batch_size (int): The batch size for the DataLoader. Defaults to 128.
         """
 
         data = state.get(self.input_key)
@@ -47,7 +48,7 @@ class NbaLstmPredictorSequenceProcessor(PipelineComponent):
             sequence_player_ids,
         )
         torch_dataloader = DataLoader(
-            torch_dataset, batch_size=batch_size, shuffle=False
+            torch_dataset, batch_size=self.batch_size, shuffle=False
         )
         state.set(self.component_name, torch_dataloader)
 

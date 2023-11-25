@@ -56,13 +56,7 @@ def parse_args(args=None):
         "--input-scaler-key", type=str, required=False, help="S3 key for model artifact"
     )
     parser.add_argument(
-        "--team-encoder-key", type=str, required=False, help="S3 key for model artifact"
-    )
-    parser.add_argument(
-        "--country-encoder-key",
-        type=str,
-        required=False,
-        help="S3 key for model artifact",
+        "--player-encoder-key", type=str, required=False, help="S3 key for model artifact"
     )
     parser.add_argument(
         "--input-file", type=str, required=True, help="S3 key for input file"
@@ -72,6 +66,12 @@ def parse_args(args=None):
     )
     parser.add_argument(
         "--epochs", type=int, required=False, help="Epochs for Training"
+    )
+    parser.add_argument(
+        "--seq-batch-size",
+        type=int,
+        required=False,
+        help="Sequence batch size for input into model",
     )
     parser.add_argument(
         "--output-file", type=str, required=False, help="S3 key for output file"
@@ -90,11 +90,15 @@ def run(args):
     if not args.gpu:
         os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
+    epochs = args.epochs if args.epochs else 10
+    learning_rate = args.learning_rate if args.learning_rate else 0.0001
+    seq_batch_size = args.seq_batch_size if args.seq_batch_size else 128
+
     input_scaler_path = (
         args.input_scaler_key if args.input_scaler_key else default_input_scaler_path
     )
     player_encoder_path = (
-        args.team_encoder_key if args.team_encoder_key else default_player_encoder_path
+        args.player_encoder_key if args.player_encoder_key else default_player_encoder_path
     )
     model_path = args.model_key if args.model_key else default_local_model_path
     model_config_path = (
@@ -112,15 +116,19 @@ def run(args):
         input_scaler_path=input_scaler_path,
         player_encoder_path=player_encoder_path,
     )
-    pipeline_sequence_processor = sequence_processor("sequence_processor")
+    pipeline_sequence_processor = sequence_processor(
+        "sequence_processor", batch_size=seq_batch_size
+    )
     pipeline_model = model(
         "model",
         model_path=model_path,
         model_config_path=model_config_path,
         model_mode=args.mode,
+        epochs=epochs,
+        learning_rate=learning_rate,
     )
     pipeline_output_processor = output_processor("output_processor")
-    pipeline_output_writer = output_writer("output_writer", args.output_file)
+    pipeline_output_writer = output_writer("output_writer", output_key=args.output_file)
     pipeline = PipelineOrchestrator(
         name="nba_lstm_model",
         input_key=args.input_file,

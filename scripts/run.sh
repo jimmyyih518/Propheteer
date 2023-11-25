@@ -9,13 +9,25 @@ if [ "$#" -lt 1 ]; then
     exit 1
 fi
 
+DOCKER_LOCAL_DIR="/usr/src/app/runfiles/"
+
 # Extract the full path of the input file
 INPUT_FILE=$(realpath $1)
 
-# Extract the directory of the input file
-INPUT_DIR=$(dirname $INPUT_FILE)
+# Extract the full directory path of the input file
+INPUT_DIR_PATH=$(dirname "$INPUT_FILE")
 
-DOCKER_INPUT_FILENAME="/usr/src/app/runfiles/$(basename $INPUT_FILE)"
+# Extract only the last part of the directory path (folder name)
+INPUT_DIR=$(basename "$INPUT_DIR_PATH")
+
+DOCKER_INPUT_FILENAME="$DOCKER_LOCAL_DIR$(basename $INPUT_FILE)"
+
+echo "Input File:"
+echo $INPUT_FILE
+echo "Input Directory:"
+echo $INPUT_DIR
+echo "Processed Docker input file:"
+echo $DOCKER_INPUT_FILENAME
 
 # The rest of the arguments are for the Docker container CLI
 CLI_ARGS=${@:2}
@@ -29,5 +41,9 @@ docker build -f container/Dockerfile -t ${DOCKER_IMAGE} .
 docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}
 
 # Run the Docker container with volume mapping and CLI arguments
-docker run -v $INPUT_DIR:/usr/src/app/runfiles $DOCKER_IMAGE python nba/src/cli.py --input-file $DOCKER_INPUT_FILENAME $CLI_ARGS
+docker run -v $INPUT_DIR_PATH:/usr/src/app/runfiles \
+    $DOCKER_IMAGE python nba/src/cli.py \
+    --input-file $DOCKER_INPUT_FILENAME \
+    --local-dir ./$INPUT_DIR/ \
+    $CLI_ARGS
 
