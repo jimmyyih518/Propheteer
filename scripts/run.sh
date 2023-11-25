@@ -15,6 +15,8 @@ INPUT_FILE=$(realpath $1)
 # Extract the directory of the input file
 INPUT_DIR=$(dirname $INPUT_FILE)
 
+DOCKER_INPUT_FILENAME="/usr/src/app/runfiles/$(basename $INPUT_FILE)"
+
 # The rest of the arguments are for the Docker container CLI
 CLI_ARGS=${@:2}
 
@@ -27,5 +29,5 @@ docker build -f container/Dockerfile -t ${DOCKER_IMAGE} .
 docker tag ${DOCKER_IMAGE} ${DOCKER_IMAGE}
 
 # Run the Docker container with volume mapping and CLI arguments
-docker run -v $INPUT_DIR:/usr/src/app/data $DOCKER_IMAGE python nba/src/cli.py $CLI_ARGS
+docker run -v $INPUT_DIR:/usr/src/app/runfiles $DOCKER_IMAGE python nba/src/cli.py --input-file $DOCKER_INPUT_FILENAME $CLI_ARGS
 
